@@ -207,7 +207,7 @@ Let's do sentiment analysis on the GOT text data using afinn, and nrc.
 
 ### Sentiment analysis with afinn: 
 
-First, bind words in `ipcc_stop` to `afinn` lexicon:
+First, bind words in `got_stop` to `afinn` lexicon:
 ```{r bind-afinn}
 got_afinn <- got_stop %>% 
   inner_join(get_sentiments("afinn"))
@@ -242,8 +242,29 @@ got_afinn2_n <- got_afinn2 %>%
 
 ggplot(data = got_afinn2_n, aes(x = word, y = n)) +
   geom_col() +
-  coord_flip()
+  coord_flip()'
 
+
+got_afinn2 <- got_afinn %>% 
+  filter(value == 2)
+```
+
+#Lets see another with fewer words (and stronger sentiments)
+```{r afinn-4-more}
+got_afinn4 <- got_afinn %>% 
+  filter(value == 4)
+# Check the unique 4-score words:
+unique(got_afinn4$word)
+
+# Count & plot them
+got_afinn4_n <- got_afinn4 %>% 
+  count(word, sort = TRUE) %>% 
+  mutate(word = fct_reorder(factor(word), n))
+
+
+ggplot(data = got_afinn4_n, aes(x = word, y = n)) +
+  geom_col() +
+  coord_flip()
 ```
 
 Look back at the IPCC report, and search for "confidence." Is it typically associated with emotion, or something else? 
@@ -257,13 +278,13 @@ got_summary <- got_afinn %>%
     mean_score = mean(value),
     median_score = median(value)
   )
+
 ```
 
-The mean and median indicate *slightly* positive overall sentiments based on the AFINN lexicon. 
 
 ### NRC lexicon for sentiment analysis
 
-We can use the NRC lexicon to start "binning" text by the feelings they're typically associated with. As above, we'll use inner_join() to combine the IPCC non-stopword text with the nrc lexicon: 
+We can use the NRC lexicon to start "binning" text by the feelings they're typically associated with. As above, we'll use inner_join() to combine the GOT non-stopword text with the nrc lexicon: 
 
 ```{r bind-bing}
 got_nrc <- got_stop %>% 
@@ -276,7 +297,7 @@ Wait, won't that exclude some of the words in our text? YES! We should check whi
 got_exclude <- got_stop %>% 
   anti_join(get_sentiments("nrc"))
 
-# View(ipcc_exclude)
+# View(got_exclude)
 
 # Count to find the most excluded:
 got_exclude_n <- got_exclude %>% 
